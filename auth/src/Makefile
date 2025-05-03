@@ -1,14 +1,20 @@
-# Makefile
+CXX = g++
+CXXFLAGS = -Wall -std=c++11
 
-CC = g++
-CFLAGS = -static -Wall
-TARGET = endpoint
+# Rutas a las bibliotecas
+MYSQL_LIB_PATH = /usr/include/cppconn
+MYSQL_LIB = -lmysqlcppconn
+
+# Ruta de vcpkg (ajústala si tu instalación es distinta)
+VCPKG_INCLUDE = /vcpkg/installed/x64-linux/include
+
+# Archivos fuente
 SRC = endpoint.cpp
 
-# Regla por defecto para compilar el ejecutable
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
+# Archivo de salida
+OUT = endpoint
 
-# Limpieza de archivos generados
+all:
+	$(CXX) $(CXXFLAGS) -I$(MYSQL_LIB_PATH) -I$(VCPKG_INCLUDE) $(SRC) -o $(OUT) $(MYSQL_LIB)
 clean:
-	rm -f $(TARGET)
+	rm -f $(OUT)
