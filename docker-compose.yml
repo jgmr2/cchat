@@ -8,59 +8,42 @@ services:
     networks:
       - app-network
     depends_on:
-      - mysql-auth
+      - mongo-auth
     env_file:
       - .env
     environment:
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${AUTH_DB}
-      - MYSQL_PORT=${MYSQL_PORT}
+      - MONGO_HOST=mongo-auth
+      - MONGO_PORT=27017
+      - MONGO_DATABASE=${AUTH_DB}
 
-  mysql-auth:
-    image: mysql:8
+  mongo-auth:
+    image: mongo:latest
     networks:
       - app-network
-    env_file:
-      - .env
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${AUTH_DB}
-      - MYSQL_PORT=${MYSQL_PORT}
     volumes:
-      - mysql-auth-data:/var/lib/mysql
-      - ./auth/config/entrypoint.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mongo-auth-data:/data/db
 
-  messaging:
+  models:
     build:
-      context: ./messaging
+      context: ./models
       dockerfile: Dockerfile
     networks:
       - app-network
     depends_on:
-      - mysql-messaging
+      - mongo-models
     env_file:
       - .env
     environment:
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MESSAGING_DB}
-      - MYSQL_PORT=${MYSQL_PORT}
+      - MONGO_HOST=mongo-models
+      - MONGO_PORT=27017
+      - MONGO_DATABASE=${models_DB}
 
-  mysql-messaging:
-    image: mysql:8
+  mongo-models:
+    image: mongo:latest
     networks:
       - app-network
-    env_file:
-      - .env
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MESSAGING_DB}
-      - MYSQL_PORT=${MYSQL_PORT}
     volumes:
-      - mysql-messaging-data:/var/lib/mysql
+      - mongo-models-data:/data/db
 
   storage:
     build:
@@ -69,28 +52,20 @@ services:
     networks:
       - app-network
     depends_on:
-      - mysql-storage
+      - mongo-storage
     env_file:
       - .env
     environment:
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${STORAGE_DB}
-      - MYSQL_PORT=${MYSQL_PORT}
+      - MONGO_HOST=mongo-storage
+      - MONGO_PORT=27017
+      - MONGO_DATABASE=${STORAGE_DB}
 
-  mysql-storage:
-    image: mysql:8
+  mongo-storage:
+    image: mongo:latest
     networks:
       - app-network
-    env_file:
-      - .env
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${STORAGE_DB}
-      - MYSQL_PORT=${MYSQL_PORT}
     volumes:
-      - mysql-storage-data:/var/lib/mysql
+      - mongo-storage-data:/data/db
 
   nginx:
     image: nginx:latest
@@ -100,16 +75,16 @@ services:
       - "80:80"
     depends_on:
       - auth
-      - messaging
+      - models
       - storage
     networks:
       - app-network
     restart: unless-stopped
 
 volumes:
-  mysql-auth-data:
-  mysql-messaging-data:
-  mysql-storage-data:
+  mongo-auth-data:
+  mongo-models-data:
+  mongo-storage-data:
 
 networks:
   app-network:
