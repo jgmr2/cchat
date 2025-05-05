@@ -12,9 +12,9 @@ services:
     env_file:
       - .env
     environment:
-      - MONGO_HOST=mongo-auth
-      - MONGO_PORT=27017
-      - MONGO_DATABASE=${AUTH_DB}
+      - MONGO_HOST=${MONGO_HOST_AUTH}
+      - MONGO_PORT=${MONGO_PORT_AUTH}
+      - MONGO_DATABASE=${MONGO_DATABASE_AUTH}
 
   mongo-auth:
     image: mongo:latest
@@ -34,9 +34,9 @@ services:
     env_file:
       - .env
     environment:
-      - MONGO_HOST=mongo-models
-      - MONGO_PORT=27017
-      - MONGO_DATABASE=${models_DB}
+      - MONGO_HOST=${MONGO_HOST_MODELS}
+      - MONGO_PORT=${MONGO_PORT_MODELS}
+      - MONGO_DATABASE=${MONGO_DATABASE_MODELS}
 
   mongo-models:
     image: mongo:latest
@@ -56,9 +56,9 @@ services:
     env_file:
       - .env
     environment:
-      - MONGO_HOST=mongo-storage
-      - MONGO_PORT=27017
-      - MONGO_DATABASE=${STORAGE_DB}
+      - MONGO_HOST=${MONGO_HOST_STORAGE}
+      - MONGO_PORT=${MONGO_PORT_STORAGE}
+      - MONGO_DATABASE=${MONGO_DATABASE_STORAGE}
 
   mongo-storage:
     image: mongo:latest

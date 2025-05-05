@@ -62,6 +62,14 @@ RUN wget https://github.com/mongodb/mongo-cxx-driver/archive/refs/tags/r${MONGOC
 # Clone Crow (headers only)
 RUN git clone https://github.com/CrowCpp/Crow.git /crow
 
+# Instalar libbcrypt desde GitHub
+RUN git clone https://github.com/trusch/libbcrypt.git /libbcrypt && \
+    cd /libbcrypt && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make && \
+    make install
+
 WORKDIR /app
 COPY ./src /app
 
@@ -71,7 +79,7 @@ RUN g++ -std=c++17 -O3 main.cpp -o app \
     -I/opt/mongocxx/include/bsoncxx/v_noabi \
     -I/opt/mongocxx/include/mongocxx/v_noabi \
     -L/opt/mongocxx/lib \
-    -lmongocxx -lbsoncxx -lssl -lcrypto -lz -lpthread
+    -lmongocxx -lbsoncxx -lssl -lcrypto -lz -lpthread -lbcrypt
 
 
 # Stage 2: Minimal image for execution
@@ -82,7 +90,8 @@ RUN apk add --no-cache \
     openssl \
     boost-system \
     zlib \
-    libgcc
+    libgcc \
+    zstd
 
 COPY --from=builder /app/app /app/app
 COPY --from=builder /opt/mongocxx /usr/local
