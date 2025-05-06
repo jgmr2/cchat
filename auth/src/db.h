@@ -7,7 +7,6 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
 #include <mongocxx/exception/exception.hpp>
-
 class MongoDBConnection {
 public:
     MongoDBConnection(const std::string& db_name_env) {

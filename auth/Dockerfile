@@ -73,12 +73,19 @@ COPY ./src /app
 # Clone httlib (headers only)
 RUN wget -O /app/httplib.h https://raw.githubusercontent.com/yhirose/cpp-httplib/master/httplib.h
 
-RUN g++ -std=c++17 -O3 main.cpp -o app \
+# === Add nlohmann/json (single include version) ===
+RUN wget -O /app/json.hpp https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp
+
+
+RUN g++ -std=c++17 -O3 *.cpp -o app \
     -I/opt/mongocxx/include \
     -I/opt/mongocxx/include/bsoncxx/v_noabi \
     -I/opt/mongocxx/include/mongocxx/v_noabi \
     -L/opt/mongocxx/lib \
     -lmongocxx -lbsoncxx -lssl -lcrypto -lz -lpthread -lbcrypt
+
+
+
 
 
 # Stage 2: Minimal image for execution
