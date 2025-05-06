@@ -1,15 +1,16 @@
-#include <crow.h>
+#include "httplib.h"
 #include <mongocxx/instance.hpp>
 #include "mongoConnection.h"
 #include "getUsers.h"
 #include "newUser.h"
+#include <iostream>
 
 int main() {
-    mongocxx::instance instance{};  // ¡Debe vivir mientras dure el programa!
-    crow::SimpleApp app;
+    mongocxx::instance instance{};  // Debe vivir mientras dure el programa
+    httplib::Server server;
 
     // Ruta para obtener todos los usuarios
-    CROW_ROUTE(app, "/users")([]() {
+    server.Get("/users", [](const httplib::Request&, httplib::Response& res) {
         try {
             MongoDBConnection mongoConn("AUTH");
             auto usuarios = get_all_users(mongoConn);
@@ -21,42 +22,59 @@ int main() {
             }
             response += "\n]";
 
-            return crow::response(200, response);
+            res.set_content(response, "application/json");
+            res.status = 200;
         } catch (const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;
-            return crow::response(500, "Internal server error");
+            res.status = 500;
+            res.set_content("Internal server error", "text/plain");
         }
     });
 
     // Ruta para agregar un usuario
-    CROW_ROUTE(app, "/add_user").methods("POST"_method)([](const crow::request& req) {
+    server.Post("/add_user", [](const httplib::Request& req, httplib::Response& res) {
         try {
-            auto json_data = crow::json::load(req.body);
-            if (!json_data || !json_data.has("username") || !json_data.has("password") || !json_data.has("email")) {
-                return crow::response(400, R"({"error":"Des données manquantes"})");
-            }
+            std::string body = req.body;
 
-            std::string username = json_data["username"].s();
-            std::string password = json_data["password"].s();
-            std::string email = json_data["email"].s();
+            // Extracción manual de campos (sin JSON parsing)
+            auto get_value = [&](const std::string& key) -> std::string {
+                auto pos = body.find("\"" + key + "\"");
+                if (pos == std::string::npos) return "";
+                auto start = body.find(":", pos);
+                auto quote1 = body.find("\"", start);
+                auto quote2 = body.find("\"", quote1 + 1);
+                if (quote1 == std::string::npos || quote2 == std::string::npos) return "";
+                return body.substr(quote1 + 1, quote2 - quote1 - 1);
+            };
+
+            std::string username = get_value("username");
+            std::string password = get_value("password");
+            std::string email = get_value("email");
+
+            if (username.empty() || password.empty() || email.empty()) {
+                res.status = 400;
+                res.set_content(R"({"error":"Des données manquantes"})", "application/json");
+                return;
+            }
 
             MongoDBConnection mongoConn("AUTH");
             bool success = add_user(mongoConn, username, password, email);
 
             if (success) {
-                crow::json::wvalue res;
-                res["message"] = "Utilisateur enregistré avec succès";
-                return crow::response(200, res);
+                res.status = 200;
+                res.set_content(R"({"message":"Utilisateur enregistré avec succès"})", "application/json");
             } else {
-                return crow::response(400, R"({"error":"Email déjà enregistré ou error de inserción"})");
+                res.status = 400;
+                res.set_content(R"({"error":"Email déjà enregistré ou error de inserción"})", "application/json");
             }
-
         } catch (const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;
-            return crow::response(500, R"({"error":"Internal server error"})");
+            res.status = 500;
+            res.set_content(R"({"error":"Internal server error"})", "application/json");
         }
     });
 
-    app.bindaddr("0.0.0.0").port(8080).multithreaded().run();
+    std::cout << "Servidor escuchando en http://0.0.0.0:8080" << std::endl;
+    server.listen("0.0.0.0", 8080);
     return 0;
 }
