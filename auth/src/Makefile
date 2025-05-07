@@ -4,7 +4,10 @@ INCLUDES = -I/opt/mongocxx/include \
            -I/opt/mongocxx/include/bsoncxx/v_noabi \
            -I/opt/mongocxx/include/mongocxx/v_noabi
 LIBS = -L/opt/mongocxx/lib \
-       -lmongocxx -lbsoncxx -lssl -lcrypto -lz -lpthread -lbcrypt
+       -lmongocxx -lbsoncxx \
+       -lmongoc2 -lbson2 \
+       -lssl -lcrypto -lz -lpthread -lbcrypt \
+       -Wl,-rpath,/opt/mongocxx/lib
 
 SOURCES = $(wildcard *.cpp)
 TARGET = app

@@ -5,17 +5,22 @@
 #include <string>
 
 #include "actions/registerUser.h"
-#include "actions/login.h"
-#include "actions/logout.h"
-#include "actions/refresh.h"
-#include "actions/me.h"
-#include "actions/forgot.h"
+#include "actions/userInfo.h"
+
+// #include "actions/login.h"
+// #include "actions/logout.h"
+// #include "actions/refresh.h"
+// #include "actions/forgot.h"
 
 void handle_register(const httplib::Request& req, httplib::Response& res, mongocxx::database* db) {
     std::string result = registerUser(req, *db);  // *db pasa la referencia
     res.set_content(result, "text/plain");
 }
 
+void handle_userInfo(const httplib::Request& req, httplib::Response& res, mongocxx::database* db) {
+    std::string result = userInfo(req, *db);  // Llama a la función userInfo
+    res.set_content(result, "application/json"); // Responde con el resultado en formato JSON
+}
 // void handle_login(const httplib::Request& req, httplib::Response& res, mongocxx::database* db) {
 //     std::string result = login(req, *db);
 //     res.set_content(result, "text/plain");
