@@ -1,4 +1,5 @@
 #include "crow.h"
+#include "crow/middlewares/cors.h" // Incluir el middleware CORSHandler
 #include <fstream>
 #include <filesystem>
 #include <unordered_map>
@@ -28,7 +29,23 @@ std::string get_file_extension(const std::string& filename) {
 
 int main()
 {
-    crow::SimpleApp app;
+    // Inicializar la aplicación con el middleware CORSHandler
+    crow::App<crow::CORSHandler> app;
+
+    // Configurar las reglas de CORS globales
+    auto& cors = app.get_middleware<crow::CORSHandler>();
+    cors.global()
+        .origin("*") // Permitir todas las solicitudes de cualquier origen
+        .methods(crow::HTTPMethod::GET, crow::HTTPMethod::POST, crow::HTTPMethod::OPTIONS) // Métodos permitidos
+        .headers("Content-Type", "X-Filename") // Encabezados permitidos
+        .max_age(3600); // Tiempo de caché para preflight
+
+    // Ruta para manejar solicitudes OPTIONS (preflight)
+    CROW_ROUTE(app, "/upload").methods(crow::HTTPMethod::OPTIONS)([](const crow::request& req){
+        crow::response res;
+        res.code = 204; // No Content
+        return res;
+    });
 
     // Ruta para subir un archivo
     CROW_ROUTE(app, "/upload").methods(crow::HTTPMethod::POST)([](const crow::request& req){
