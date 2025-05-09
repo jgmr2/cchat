@@ -15,6 +15,7 @@ services:
       - MONGO_HOST=${MONGO_HOST_AUTH}
       - MONGO_PORT=${MONGO_PORT_AUTH}
       - MONGO_DATABASE=${MONGO_DATABASE_AUTH}
+      - MONGO_URI=${MONGO_URI_AUTH}
       - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
 

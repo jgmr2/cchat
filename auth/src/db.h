@@ -7,25 +7,48 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
 #include <mongocxx/exception/exception.hpp>
+
 class MongoDBConnection {
 public:
     MongoDBConnection(const std::string& db_name_env) {
         try {
-            std::string host = get_env_or_default("MONGO_HOST_" + db_name_env, "localhost");
-            std::string port = get_env_or_default("MONGO_PORT_" + db_name_env, "27017");
-            std::string db_name = get_env_or_default("MONGO_DATABASE_" + db_name_env, "auth");
-            std::string uri = "mongodb://" + host + ":" + port;
+            // Obtener la URI completa desde las variables de entorno
+            std::string uri = get_env_or_default("MONGO_URI_" + db_name_env, "");
+            if (uri.empty()) {
+                throw std::runtime_error("MongoDB URI is not set for " + db_name_env);
+            }
 
+            std::cout << "MongoDB URI: " << uri << std::endl;
+
+            // Crear el cliente y conectar a la base de datos
             client_ = mongocxx::client{mongocxx::uri{uri}};
-            db_ = client_[db_name];
 
-            std::cout << "Conectado a MongoDB en: " << uri << ", base de datos: " << db_name << std::endl;
+            // Obtener el nombre de la base de datos desde la URI
+            std::string database_name = mongocxx::uri{uri}.database();
+            if (database_name.empty()) {
+                throw std::runtime_error("Database name is not specified in the URI");
+            }
+
+            db_ = client_[database_name]; // Usar directamente el std::string
+
+            if (!db_) {
+                throw std::runtime_error("Failed to initialize database object");
+            }
+
+            std::cout << "Conectado a MongoDB en: " << uri << ", base de datos: " << database_name << std::endl;
         } catch (const mongocxx::exception& e) {
             std::cerr << "Error al conectar a MongoDB: " << e.what() << std::endl;
+            throw;
+        } catch (const std::exception& e) {
+            std::cerr << "Error inesperado: " << e.what() << std::endl;
+            throw;
         }
     }
 
     mongocxx::database& get_database() {
+        if (!db_) {
+            throw std::runtime_error("Database object is not initialized");
+        }
         return db_;
     }
 
