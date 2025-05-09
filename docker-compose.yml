@@ -15,6 +15,7 @@ services:
       - MONGO_HOST=${MONGO_HOST_AUTH}
       - MONGO_PORT=${MONGO_PORT_AUTH}
       - MONGO_DATABASE=${MONGO_DATABASE_AUTH}
+    restart: unless-stopped
 
   mongo-auth:
     image: mongo:latest
@@ -45,6 +46,7 @@ services:
     volumes:
       - mongo-models-data:/data/db
 
+ 
   storage:
     build:
       context: ./storage
@@ -53,13 +55,24 @@ services:
       - app-network
     depends_on:
       - mongo-storage
+      - minio
     env_file:
       - .env
     environment:
       - MONGO_HOST=${MONGO_HOST_STORAGE}
       - MONGO_PORT=${MONGO_PORT_STORAGE}
       - MONGO_DATABASE=${MONGO_DATABASE_STORAGE}
-
+      - MINIO_HOST=${MINIO_HOST}
+      - MINIO_PORT=${MINIO_PORT}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse
+    security_opt:
+      - apparmor:unconfined
+    restart: unless-stopped
   mongo-storage:
     image: mongo:latest
     networks:
@@ -72,7 +85,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     ports:
-      - "80:80"
+      - "81:80"
     depends_on:
       - auth
       - models
@@ -81,10 +94,43 @@ services:
       - app-network
     restart: unless-stopped
 
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  nuxt-app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nuxt
+    ports:
+      - "80:3000"
+    networks:
+      - app-network
+    env_file:
+      - .env
+    volumes:
+      - ./frontend:/home/node/app
+      - /home/node/app/node_modules
+    command: npm run dev
+
+
 volumes:
   mongo-auth-data:
   mongo-models-data:
   mongo-storage-data:
+  minio-data:
 
 networks:
   app-network:

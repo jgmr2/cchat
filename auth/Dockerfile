@@ -1,4 +1,4 @@
-FROM jgmr2/calpine-mongoxxx:latest AS builder
+FROM jgmr2/calpine-mongoxxx4.1.0-crow:latest AS builder
 
 WORKDIR /app
 
