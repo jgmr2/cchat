@@ -15,6 +15,7 @@ services:
       - MONGO_HOST=${MONGO_HOST_AUTH}
       - MONGO_PORT=${MONGO_PORT_AUTH}
       - MONGO_DATABASE=${MONGO_DATABASE_AUTH}
+      - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
 
   mongo-auth:
@@ -38,6 +39,7 @@ services:
       - MONGO_HOST=${MONGO_HOST_MODELS}
       - MONGO_PORT=${MONGO_PORT_MODELS}
       - MONGO_DATABASE=${MONGO_DATABASE_MODELS}
+      - JWT_SECRET=${JWT_SECRET}
 
   mongo-models:
     image: mongo:latest
@@ -64,8 +66,7 @@ services:
       - MONGO_DATABASE=${MONGO_DATABASE_STORAGE}
       - MINIO_HOST=${MINIO_HOST}
       - MINIO_PORT=${MINIO_PORT}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - JWT_SECRET=${JWT_SECRET}
     cap_add:
       - SYS_ADMIN
     devices:
@@ -100,9 +101,6 @@ services:
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     volumes:
       - minio-data:/data
     networks:

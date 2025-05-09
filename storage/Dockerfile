@@ -1,38 +1,24 @@
-# Etapa de build
 FROM jgmr2/calpine-mongoxxx4.1.0-crow:latest AS builder
-
 WORKDIR /app
 COPY ./src /app
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-
 RUN make
 
-# Etapa de ejecución: usa TU MISMA IMAGEN como base
 FROM jgmr2/calpine:latest
-
-# Instalar s3fs y dependencias
 RUN apk add --no-cache \
     bash \
     fuse \
     s3fs-fuse \
     curl \
     ca-certificates
-
-# Crear punto de montaje
+    
 RUN mkdir -p /mnt/cdb
-
-# Copiar credenciales
 COPY passwd-s3fs /etc/passwd-s3fs
 RUN chmod 600 /etc/passwd-s3fs
-
-# Copiar binario y dependencias de mongocxx
 COPY --from=builder /app/app /app/app
 COPY --from=builder /opt/mongocxx /usr/local
-
 WORKDIR /app
 EXPOSE 80
-
-# CMD que espera a MinIO, monta el bucket y ejecuta la app
 CMD sh -c "until curl -s http://minio:9000/minio/health/ready; do echo 'Esperando a MinIO...'; sleep 2; done && \
     s3fs cdb /mnt/cdb \
     -o url=http://minio:9000 \

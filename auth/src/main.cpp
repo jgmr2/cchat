@@ -1,7 +1,18 @@
 #include "crow.h"
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
 int main()
 {
+    // Obtener el secreto JWT desde las variables de entorno
+    const char* jwt_secret_env = std::getenv("JWT_SECRET");
+    if (!jwt_secret_env) {
+        std::cerr << "Error: JWT_SECRET is not set in the environment variables" << std::endl;
+        return 1;
+    }
+    const std::string JWT_SECRET = jwt_secret_env;
+
     crow::SimpleApp app;
 
     // Ruta raíz
@@ -9,19 +20,9 @@ int main()
         return "Hello, world!";
     });
 
-    // Ruta para un saludo personalizado
-    CROW_ROUTE(app, "/hello/<string>")([](const std::string& name){
-        return "Hello, " + name + "!";
-    });
-
-    // Ruta para sumar dos números
-    CROW_ROUTE(app, "/add/<int>/<int>")([](int a, int b){
-        return crow::response(std::to_string(a + b));
-    });
-
-    // Ruta para manejar un método POST
-    CROW_ROUTE(app, "/post").methods(crow::HTTPMethod::POST)([](const crow::request& req){
-        return crow::response("Received POST request with body: " + req.body);
+    // Ruta para verificar el secreto JWT
+    CROW_ROUTE(app, "/secret")([JWT_SECRET](){
+        return "JWT Secret: " + JWT_SECRET;
     });
 
     // Iniciar el servidor
