@@ -59,8 +59,15 @@ namespace routes {
                     return crow::response(401, R"({"error": "Invalid email or password"})");
                 }
 
-                // Extraemos la contraseña hasheada del documento
+                // Extraemos el ObjectId del documento
                 auto user_view = user_doc->view();
+                auto object_id_elem = user_view["_id"];
+                if (!object_id_elem) {
+                    return crow::response(500, R"({"error": "User ID not found"})");
+                }
+                auto object_id = object_id_elem.get_oid().value.to_string();
+
+                // Extraemos la contraseña hasheada del documento
                 auto hashed_password_elem = user_view["password"];
                 if (!hashed_password_elem) {
                     return crow::response(500, R"({"error": "Password not found for user"})");
@@ -85,10 +92,10 @@ namespace routes {
                     .set_type("JWT")
                     .set_payload_claim("email", jwt::claim(email))
                     .set_payload_claim("username", jwt::claim(username))
+                    .set_payload_claim("user_id", jwt::claim(object_id)) // Incluimos el ObjectId
                     .set_issued_at(std::chrono::system_clock::now())
                     .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(24))
                     .sign(jwt::algorithm::hs256{jwt_secret});
-
 
                 // Devolvemos el token al cliente
                 crow::json::wvalue response;
