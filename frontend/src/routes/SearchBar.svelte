@@ -111,7 +111,6 @@
         border: none; /* Elimina los bordes */
         outline: none; /* Elimina el borde azul de Firefox */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: all 0.1s ease-in-out;
         color: rgba(12, 78, 77, 0.715);
         background-color: rgba(5, 88, 96, 0.097);
     }

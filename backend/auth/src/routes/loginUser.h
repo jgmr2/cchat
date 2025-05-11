@@ -65,7 +65,6 @@ namespace routes {
                 if (!hashed_password_elem) {
                     return crow::response(500, R"({"error": "Password not found for user"})");
                 }
-
                 auto hashed_password = std::string(hashed_password_elem.get_string().value);
 
                 // Verificamos la contraseña
@@ -73,14 +72,23 @@ namespace routes {
                     return crow::response(401, R"({"error": "Invalid email or password"})");
                 }
 
+                // Extraemos el username del documento
+                auto username_elem = user_view["username"];
+                if (!username_elem) {
+                    return crow::response(500, R"({"error": "Username not found for user"})");
+                }
+                auto username = std::string(username_elem.get_string().value);
+
                 // Generamos el token JWT
                 auto token = jwt::create()
-                                 .set_issuer("auth_service")
-                                 .set_type("JWT")
-                                 .set_payload_claim("email", jwt::claim(email))
-                                 .set_issued_at(std::chrono::system_clock::now())
-                                 .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(24)) // Expira en 24 horas
-                                 .sign(jwt::algorithm::hs256{jwt_secret});
+                    .set_issuer("auth_service")
+                    .set_type("JWT")
+                    .set_payload_claim("email", jwt::claim(email))
+                    .set_payload_claim("username", jwt::claim(username))
+                    .set_issued_at(std::chrono::system_clock::now())
+                    .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(24))
+                    .sign(jwt::algorithm::hs256{jwt_secret});
+
 
                 // Devolvemos el token al cliente
                 crow::json::wvalue response;
