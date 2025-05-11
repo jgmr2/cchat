@@ -3,7 +3,7 @@ version: "3.8"
 services:
   auth:
     build:
-      context: ./auth
+      context: ./backend/auth
       dockerfile: Dockerfile
     networks:
       - app-network
@@ -28,7 +28,7 @@ services:
 
   models:
     build:
-      context: ./models
+      context: ./backend/models
       dockerfile: Dockerfile
     networks:
       - app-network
@@ -49,10 +49,9 @@ services:
     volumes:
       - mongo-models-data:/data/db
 
- 
   storage:
     build:
-      context: ./storage
+      context: ./backend/storage
       dockerfile: Dockerfile
     networks:
       - app-network
@@ -75,6 +74,7 @@ services:
     security_opt:
       - apparmor:unconfined
     restart: unless-stopped
+
   mongo-storage:
     image: mongo:latest
     networks:
@@ -83,11 +83,11 @@ services:
       - mongo-storage-data:/data/db
 
   nginx:
-    image: nginx:latest
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     ports:
-      - "81:80"
+      - "80:80"
     depends_on:
       - auth
       - models
@@ -107,23 +107,6 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-
-  nuxt-app:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: nuxt
-    ports:
-      - "80:3000"
-    networks:
-      - app-network
-    env_file:
-      - .env
-    volumes:
-      - ./frontend:/home/node/app
-      - /home/node/app/node_modules
-    command: npm run dev
-
 
 volumes:
   mongo-auth-data:
