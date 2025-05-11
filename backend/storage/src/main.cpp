@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <unordered_map>
 #include <openssl/sha.h> // Biblioteca para calcular SHA-512
+#include <regex> // Para validar el formato del token
+#include <sstream> // Para manejar cadenas y conversiones
 
 // Función para calcular el hash SHA-512
 std::string calculate_sha512(const std::string& data) {
@@ -27,6 +29,24 @@ std::string get_file_extension(const std::string& filename) {
     return ""; // Si no hay extensión, devuelve una cadena vacía
 }
 
+// Función para validar el token (puedes personalizarla según tus necesidades)
+bool validate_token(const std::string& token) {
+    if (token.empty()) {
+        return false;
+    }
+
+    // Eliminar el prefijo "Bearer " si está presente
+    std::string actual_token = token;
+    const std::string prefix = "Bearer ";
+    if (token.find(prefix) == 0) {
+        actual_token = token.substr(prefix.size());
+    }
+
+    // Validar el formato del token
+    std::regex token_regex("^[A-Za-z0-9\\-_.]+$");
+    return std::regex_match(actual_token, token_regex);
+}
+
 int main()
 {
     // Inicializar la aplicación con el middleware CORSHandler
@@ -37,7 +57,7 @@ int main()
     cors.global()
         .origin("*") // Permitir todas las solicitudes de cualquier origen
         .methods(crow::HTTPMethod::GET, crow::HTTPMethod::POST, crow::HTTPMethod::OPTIONS) // Métodos permitidos
-        .headers("Content-Type", "X-Filename") // Encabezados permitidos
+        .headers("Content-Type", "X-Filename", "Authorization") // Encabezados permitidos
         .max_age(3600); // Tiempo de caché para preflight
 
     // Ruta para manejar solicitudes OPTIONS (preflight)
@@ -52,27 +72,40 @@ int main()
         // Directorio donde se guardarán los archivos
         const std::string upload_dir = "/mnt/cdb/";
 
-        // Verificar si el cuerpo de la solicitud contiene datos
-        if (req.body.empty()) {
-            return crow::response(400, "No file provided in the request body.");
+        // Paso 1: Validar el token
+        std::string token = req.get_header_value("Authorization");
+        if (token.empty()) {
+            return crow::response(401, "Unauthorized: Missing token.");
         }
 
-        // Obtener el nombre del archivo desde el encabezado X-Filename
+        if (!validate_token(token)) {
+            return crow::response(401, "Unauthorized: Invalid token.");
+        }
+
+        // Paso 2: Validar el encabezado X-Filename
         std::string original_filename = req.get_header_value("X-Filename");
         if (original_filename.empty()) {
             return crow::response(400, "Missing X-Filename header.");
         }
 
-        // Obtener la extensión del archivo
+        // Paso 3: Validar el cuerpo de la solicitud
+        if (req.body.empty()) {
+            return crow::response(400, "No file provided in the request body.");
+        }
+
+        // Paso 4: Procesar el archivo
         std::string file_extension = get_file_extension(original_filename);
-
-        // Calcular el hash SHA-512 del contenido del archivo
         std::string sha512_hash = calculate_sha512(req.body);
-
-        // Ruta completa del archivo usando el hash como nombre y conservando la extensión
         const std::string file_path = upload_dir + sha512_hash + file_extension;
 
-        // Guardar el archivo en el volumen montado
+        // Crear el directorio si no existe
+        try {
+            std::filesystem::create_directories(upload_dir);
+        } catch (const std::filesystem::filesystem_error& e) {
+            return crow::response(500, "Failed to create upload directory: " + std::string(e.what()));
+        }
+
+        // Guardar el archivo en el disco
         try {
             std::ofstream file(file_path, std::ios::binary);
             if (!file) {

@@ -12,17 +12,23 @@
         }
 
         try {
-            // Crear un objeto FormData para enviar el archivo
-            const formData = new FormData();
-            formData.append('file', file);
+            // Obtener el token del usuario (por ejemplo, desde localStorage)
+            const token = localStorage.getItem('sessionToken'); // Asegúrate de que el token esté almacenado aquí
+
+            if (!token) {
+                uploadMessage = 'User is not authenticated.';
+                return;
+            }
 
             // Realizar la solicitud POST al endpoint
             const response = await fetch('http://localhost:81/storage/upload', {
                 method: 'POST',
                 headers: {
-                    'X-Filename': file.name // Enviar el nombre del archivo en el encabezado
+                    'X-Filename': file.name, // Enviar el nombre del archivo en el encabezado
+                    'Authorization': `Bearer ${token}`, // Incluir el token en el encabezado
+                    'Content-Type': file.type // Establecer el tipo de contenido del archivo
                 },
-                body: file // Enviar el archivo directamente en el cuerpo
+                body: file // Enviar el archivo directamente como cuerpo
             });
 
             if (!response.ok) {
@@ -45,7 +51,7 @@
         uploadMessage = ''; // Limpiar el mensaje anterior
     }
 
-     function handleKeyDown(event) {
+    function handleKeyDown(event) {
         if (event.key === 'Escape') {
             onClose(); // Llamar a la función para cerrar el panel
         }
@@ -78,7 +84,7 @@
         position: fixed;
         top: 0;
         right: 0;
-        width: 100%; /* Ocupa el 50% del ancho disponible */
+        width: 100%;
         height: 100%;
         background-color: white;
         box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
@@ -86,6 +92,7 @@
         display: flex;
         flex-direction: column;
         padding: 1rem;
+        transition: all 0.1s ease-in-out;
     }
 
     .close-button {
