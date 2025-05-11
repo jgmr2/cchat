@@ -1,5 +1,6 @@
 FROM jgmr2/calpine-mongoxxx4.1.0-crow:latest AS builder
 WORKDIR /app
+RUN git clone https://github.com/Thalhammer/jwt-cpp.git /opt/jwt-cpp
 COPY ./src /app
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 RUN make
