@@ -1,25 +1,18 @@
-FROM node:20-alpine
+# Usar una imagen base de Node.js
+FROM node:18
 
-# Crear y usar la carpeta de trabajo
-WORKDIR /home/node/app
+# Establecer el directorio de trabajo dentro del contenedor
+WORKDIR /app
 
-# Copiamos package.json y lock
-COPY package*.json ./
-
-# Instalamos dependencias
-RUN npm install
-
-# Copiamos todo (esto luego se sobreescribe por el volumen)
+# Copiar los archivos del proyecto al contenedor
+COPY ./package*.json ./
 COPY . .
 
-# Variables necesarias
-ENV NUXT_HOST=0.0.0.0
-ENV NUXT_PORT=3000
+# Instalar las dependencias
+RUN npm install
 
-# Exponemos el puerto para Nuxt
-EXPOSE 3000
+# Exponer el puerto 80
+EXPOSE 80
 
-# Ejecutamos el servidor en modo desarrollo
-CMD ["npm", "run", "dev"]
-
-
+# Comando para ejecutar la aplicación en modo desarrollo
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "80"]
