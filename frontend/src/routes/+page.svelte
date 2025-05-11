@@ -2,6 +2,7 @@
     <SearchBar />
     {#if sessionToken && userEmail}
        <Profile on:toggleSidebar={toggleSidebar} />
+       <FloatingButton on:toggleFileUploadPanel={toggleFileUploadPanel} />
     {:else}
         <LoginButton />
     {/if}
@@ -9,20 +10,27 @@
     {#if isSidebarOpen}
         <Sidebar email={userEmail} username={username} onClose={toggleSidebar} />
     {/if}
-    <FileUpload />
+
+    {#if isFileUploadOpen}
+        <div class="file-upload-panel">
+            <FileUpload onClose={toggleFileUploadPanel} />
+        </div>
+    {/if}
 </div>
 
 <script>
-    import SearchBar from "./SearchBar.svelte";
-    import LoginButton from "./LoginButton.svelte";
-    import Profile from "./Profile.svelte";
-    import Sidebar from "./Sidebar.svelte";
-    import FileUpload from "./FileUpload.svelte";
+    import SearchBar from "./components/SearchBar.svelte";
+    import LoginButton from "./components/LoginButton.svelte";
+    import Profile from "./components/Profile.svelte";
+    import Sidebar from "./components/Sidebar.svelte";
+    import FileUpload from "./components/FileUpload.svelte";
+    import FloatingButton from "./components/FloatingButton.svelte";
 
     let sessionToken = null;
     let userEmail = '';
     let username = '';
     let isSidebarOpen = false;
+    let isFileUploadOpen = false; // Nuevo estado para el panel de FileUpload
 
     // Verificar si estamos en el cliente
     if (typeof window !== 'undefined') {
@@ -45,4 +53,25 @@
     function toggleSidebar() {
         isSidebarOpen = !isSidebarOpen;
     }
+
+    // Función para alternar el estado del panel de FileUpload
+    function toggleFileUploadPanel() {
+        isFileUploadOpen = !isFileUploadOpen;
+    }
 </script>
+
+<style>
+    .file-upload-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 100%;
+        background-color: white;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+    }
+</style>
