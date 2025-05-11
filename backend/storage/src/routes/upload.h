@@ -59,13 +59,22 @@ inline void setup_upload_routes(crow::App<crow::CORSHandler>& app, MongoDBConnec
             }
 
             std::string token = auth_header.substr(7); // Eliminar "Bearer " del encabezado
+            std::string user_id;
             try {
                 auto decoded = jwt::decode(token);
                 auto verifier = jwt::verify()
                                     .allow_algorithm(jwt::algorithm::hs256{jwt_secret})
-                                    .with_issuer("auth_service"); // Cambia "auth0" por tu emisor si es necesario
+                                    .with_issuer("auth_service"); // Cambia "auth_service" por tu emisor si es necesario
                 verifier.verify(decoded);
-                std::cout << "[INFO] Token JWT válido." << std::endl;
+
+                // Extraer el ID del usuario del token JWT
+                if (decoded.has_payload_claim("user_id")) {
+                    user_id = decoded.get_payload_claim("user_id").as_string();
+                    std::cout << "[INFO] Token JWT válido. ID de usuario: " << user_id << std::endl;
+                } else {
+                    std::cerr << "[ERROR] El token JWT no contiene el ID del usuario (claim 'sub')." << std::endl;
+                    return crow::response(401, "Invalid token: missing user ID.");
+                }
             } catch (const std::exception& e) {
                 std::cerr << "[ERROR] Token JWT inválido: " << e.what() << std::endl;
                 return crow::response(401, "Invalid token.");
@@ -108,9 +117,11 @@ inline void setup_upload_routes(crow::App<crow::CORSHandler>& app, MongoDBConnec
             }
 
             try {
+                // Guardar los metadatos del archivo en la base de datos
                 auto collection = database["uploads"];
                 bsoncxx::builder::stream::document document{};
-                document << "filename" << original_filename
+                document << "user_id" << user_id
+                         << "filename" << original_filename
                          << "hash" << sha512_hash
                          << "path" << file_path
                          << "timestamp" << bsoncxx::types::b_date(std::chrono::system_clock::now());
