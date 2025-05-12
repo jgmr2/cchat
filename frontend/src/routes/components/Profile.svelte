@@ -4,23 +4,23 @@
     let username = '';
     const dispatch = createEventDispatcher();
 
-    // Verificar si estamos en el cliente
+    // Vérifier si nous sommes côté client
     if (typeof window !== 'undefined') {
         const sessionToken = localStorage.getItem('sessionToken');
 
-        // Decodificar el token para obtener el correo del usuario
+        // Décoder le token pour obtenir le nom d'utilisateur
         if (sessionToken) {
             try {
-                const payload = JSON.parse(atob(sessionToken.split('.')[1])); // Decodificar el payload del JWT
-                username = payload.username || 'Unknown User'; // Extraer el username del payload
+                const payload = JSON.parse(atob(sessionToken.split('.')[1])); // Décoder le payload du JWT
+                username = payload.username || 'Utilisateur inconnu'; // Extraire le nom d'utilisateur du payload
             } catch (err) {
-                console.error('Error decoding token:', err);
+                console.error('Erreur lors du décodage du token :', err);
             }
         }
     }
 
     function handleClick() {
-        dispatch('toggleSidebar'); // Emitir el evento al componente padre
+        dispatch('toggleSidebar'); // Émettre l'événement au composant parent
     }
 </script>
 
@@ -29,8 +29,8 @@
 <style>
     .login-button {
         position: fixed;
-        top: 10px;
-        right: 10px;
+        top: 30px;
+        right: 20px;
         padding: 8px 16px;
         background-color: transparent;
         color: #007BFF;

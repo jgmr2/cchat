@@ -1,11 +1,11 @@
 <form class="login-form" on:submit|preventDefault={handleLogin}>
-    <label for="email">Email:</label>
+    <label for="email">Email :</label>
     <input type="email" id="email" name="email" bind:value={email} placeholder="Email" />
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" bind:value={password} placeholder="Password" />
+    <label for="password">Mot de passe :</label>
+    <input type="password" id="password" name="password" bind:value={password} placeholder="Mot de passe" />
 
-    <button type="submit">Login</button>
+    <button type="submit">Connexion</button>
 </form>
 
 <script>
@@ -21,28 +21,28 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password }) // Cambiado a enviar email en lugar de username
+                body: JSON.stringify({ email, password }) // Envoyer l'email et le mot de passe
             });
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Login successful:', data);
+                console.log('Connexion réussie :', data);
 
-                // Almacenar el token en localStorage
+                // Stocker le token dans le localStorage
                 if (data.token) {
                     localStorage.setItem('sessionToken', data.token);
                 }
 
-                // Redirigir al usuario después del login exitoso
-                goto('/'); // Cambia '/dashboard' por la ruta deseada
+                // Rediriger l'utilisateur après une connexion réussie
+                goto('/'); // Remplacez '/' par la route souhaitée
             } else {
                 const error = await response.json();
-                console.error('Login failed:', error.message);
-                alert('Login failed: ' + error.message);
+                console.error('Échec de la connexion :', error.message);
+                alert('Échec de la connexion : ' + error.message);
             }
         } catch (err) {
-            console.error('Error connecting to the API:', err);
-            alert('An error occurred. Please try again.');
+            console.error('Erreur lors de la connexion à l\'API :', err);
+            alert('Une erreur est survenue. Veuillez réessayer.');
         }
     }
 </script>

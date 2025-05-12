@@ -4,7 +4,7 @@
     const dispatch = createEventDispatcher();
 
     function handleClick() {
-        dispatch('toggleFileUploadPanel'); // Emitir el evento correcto al componente padre
+        dispatch('toggleFileUploadPanel'); // Émettre l'événement approprié au composant parent
     }
 </script>
 

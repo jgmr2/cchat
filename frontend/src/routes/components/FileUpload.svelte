@@ -10,12 +10,12 @@
 
     async function handleFileUpload() {
         if (!file) {
-            uploadMessage = 'Please select a file to upload.';
+            uploadMessage = 'Veuillez sélectionner un fichier à télécharger.';
             return;
         }
 
         if (!description.trim()) {
-            uploadMessage = 'Please provide a description for the file.';
+            uploadMessage = 'Veuillez fournir une description pour le fichier.';
             return;
         }
 
@@ -23,7 +23,7 @@
             const token = localStorage.getItem('sessionToken');
 
             if (!token) {
-                uploadMessage = 'User is not authenticated.';
+                uploadMessage = "L'utilisateur n'est pas authentifié.";
                 return;
             }
 
@@ -37,20 +37,20 @@
             const response = await fetch('http://localhost:81/storage/upload', {
                 method: 'POST',
                 headers: headers,
-                body: file // Enviar solo el archivo como cuerpo de la solicitud
+                body: file // Envoyer uniquement le fichier comme corps de la requête
             });
 
             if (!response.ok) {
                 const errorText = await response.text();
-                uploadMessage = `Error: ${errorText}`;
+                uploadMessage = `Erreur : ${errorText}`;
                 return;
             }
 
             const successText = await response.text();
             uploadMessage = successText;
         } catch (error) {
-            console.error('Error uploading file:', error);
-            uploadMessage = 'An error occurred while uploading the file.';
+            console.error('Erreur lors du téléchargement du fichier :', error);
+            uploadMessage = 'Une erreur est survenue lors du téléchargement du fichier.';
         }
     }
 
@@ -90,16 +90,16 @@
 <div class="file-upload-panel">
     <button class="close-button" on:click={onClose}>X</button>
     <div class="file-upload">
-        <h2>Upload a File</h2>
+        <h2>Télécharger un fichier</h2>
         <input type="file" on:change={handleFileChange} />
         <textarea
-            placeholder="Enter a description for the file..."
+            placeholder="Entrez une description pour le fichier..."
             bind:value={description}
         ></textarea>
         <div class="tags-input">
             <input
                 type="text"
-                placeholder="Add tags (press Enter or Space)..."
+                placeholder="Ajouter des tags (appuyez sur Entrée ou Espace)..."
                 bind:value={tagInput}
                 on:keydown={handleTagInput}
             />
@@ -112,7 +112,7 @@
                 {/each}
             </div>
         </div>
-        <button on:click={handleFileUpload}>Upload</button>
+        <button on:click={handleFileUpload}>Télécharger</button>
 
         {#if uploadMessage}
             <p class="upload-message">{uploadMessage}</p>

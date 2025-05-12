@@ -1,18 +1,18 @@
-<button class="login-button" on:click={goToLogin}>Login</button>
+<button class="login-button" on:click={goToLogin}>Connexion</button>
 
 <script>
     import { goto } from '$app/navigation';
 
     function goToLogin() {
-        goto('/login'); // Cambia '/login' por la ruta de tu página de login
+        goto('/login'); // Remplacez '/login' par le chemin de votre page de connexion
     }
 </script>
 
 <style>
     .login-button {
         position: fixed;
-        top: 10px;
-        right: 10px;
+        top: 30px;
+        right: 20px;
         padding: 8px 16px;
         background-color: transparent;
         color: #007BFF;

@@ -3,27 +3,27 @@
     import RegisterForm from './RegisterForm.svelte';
     import { goto } from '$app/navigation';
 
-    let isLogin = true; // Estado inicial: mostrar el formulario de login
+    let isLogin = true; // État initial : afficher le formulaire de connexion
 
-    // Verificar si existe un token de sesión
+    // Vérifier si un token de session existe
     if (localStorage.getItem('sessionToken')) {
-        goto('/'); // Redirigir a la página principal
+        goto('/'); // Rediriger vers la page principale
     }
 
     function toggleForm() {
-        isLogin = !isLogin; // Alternar entre login y registro
+        isLogin = !isLogin; // Alterner entre connexion et inscription
     }
 </script>
 
 <div class="login-container">
-    <h1>{isLogin ? 'Login' : 'Register'}</h1>
+    <h1>{isLogin ? 'Connexion' : 'Inscription'}</h1>
     {#if isLogin}
         <LoginForm />
     {:else}
         <RegisterForm />
     {/if}
     <button class="toggle-button" on:click={toggleForm}>
-        {isLogin ? 'Switch to Register' : 'Switch to Login'}
+        {isLogin ? 'Passer à l\'inscription' : 'Passer à la connexion'}
     </button>
 </div>
 

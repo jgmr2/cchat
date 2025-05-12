@@ -1,21 +1,32 @@
 <script>
-    export let placeholder = "Buscar...";
-    export let value = "";
+    export let placeholder = "Rechercher...";
+    export let value = ""; // Initialiser avec une chaîne vide
     export let onSearch = () => {};
 
     export let isSearching = false;
-    let results = []; // Array para almacenar los resultados de la API
+    let results = []; // Tableau pour stocker les résultats de l'API
+
+    // Réinitialiser la valeur de l'input au chargement de la page
+    if (typeof window !== 'undefined') {
+        value = ""; // Réinitialiser la valeur
+        setTimeout(() => {
+            const inputElement = document.querySelector('.search-bar input');
+            if (inputElement) {
+                inputElement.value = ""; // Effacer manuellement le champ d'entrée
+            }
+        }, 0);
+    }
 
     async function fetchResults(query) {
         if (!query) {
-            results = []; // Si no hay query, vaciar resultados
+            results = []; // Si aucune requête, vider les résultats
             return;
         }
 
         try {
-            const token = localStorage.getItem('sessionToken'); // Obtener el token desde localStorage
+            const token = localStorage.getItem('sessionToken'); // Récupérer le token depuis le localStorage
             if (!token) {
-                console.error("Token JWT no encontrado en localStorage");
+                console.error("Token JWT non trouvé dans le localStorage");
                 results = [];
                 return;
             }
@@ -23,28 +34,28 @@
             const response = await fetch(`http://localhost:81/storage/uploads/search?q=${encodeURIComponent(query)}`, {
                 method: "GET",
                 headers: {
-                    "Authorization": `Bearer ${token}`, // Usar el token obtenido
+                    "Authorization": `Bearer ${token}`, // Utiliser le token récupéré
                     "Content-Type": "application/json"
                 }
             });
 
             if (!response.ok) {
-                console.error("Error al llamar a la API:", response.statusText);
+                console.error("Erreur lors de l'appel à l'API :", response.statusText);
                 results = [];
                 return;
             }
 
             const data = await response.json();
-            results = data.uploads || []; // Guardar los resultados en el array
+            results = data.uploads || []; // Stocker les résultats dans le tableau
         } catch (error) {
-            console.error("Error al realizar la solicitud:", error);
+            console.error("Erreur lors de la requête :", error);
             results = [];
         }
     }
 
     function handleInput(event) {
         value = event.target.value;
-        fetchResults(value); // Llamar a la API con el valor actual
+        fetchResults(value); // Appeler l'API avec la valeur actuelle
         onSearch(value);
         if (!isSearching) {
             isSearching = true;
@@ -55,7 +66,7 @@
         if (event.key === "Escape") {
             isSearching = false;
             value = "";
-            results = []; // Limpiar resultados al salir de la búsqueda
+            results = []; // Vider les résultats en quittant la recherche
         }
     }
 </script>
@@ -136,30 +147,78 @@
     }
 
     .search-bar {
-        width: 120%; /* Aumenta el ancho del contenedor en un 20% */
+        width: 120%; /* Augmente la largeur du conteneur de 20% */
         transition: all 0.1s ease-in-out;
     }
 
     input {
-        width: 100%; /* El input ocupa todo el ancho del contenedor */
+        width: 100%; /* L'input occupe toute la largeur du conteneur */
         font-size: 1.5rem;
         padding: 1rem 2rem;
         border-radius: 3.1416px;
-        border: none; /* Elimina los bordes */
-        outline: none; /* Elimina el borde azul de Firefox */
+        border: none; /* Supprime les bordures */
+        outline: none; /* Supprime le contour bleu de Firefox */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         color: rgba(12, 78, 77, 0.715);
         background-color: rgba(5, 88, 96, 0.097);
     }
 
     .search-container.searching input {
-        padding: 0.7rem 1.0rem; /* Reduce el padding en un 30% */
-        font-size: 1.4rem;
-        width: 40%;
+        font-size: 1rem; /* Réduire la taille de la police */
+        padding: 0.8rem 1.5rem; /* Réduire le padding */
+        width: 45%;
     }
 
     input:focus {
         background-color: #ffffff;
         box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Media queries pour écrans moyens */
+    @media (max-width: 1024px) {
+        .search-container {
+            width: 80vw; /* Réduire la largeur */
+        }
+
+        input {
+            font-size: 1.3rem; /* Réduire la taille de la police */
+            padding: 0.8rem 1.5rem; /* Réduire le padding */
+        }
+
+        .logo {
+            width: 120px; /* Réduire la taille du logo */
+        }
+    }
+
+    /* Media queries pour petits écrans */
+    @media (max-width: 768px) {
+        .search-container {
+            width: 90vw; /* Réduire encore plus la largeur */
+        }
+
+        input {
+            font-size: 1.1rem; /* Réduire la taille de la police */
+            padding: 0.6rem 1rem; /* Réduire le padding */
+        }
+
+        .logo {
+            width: 100px; /* Réduire la taille du logo */
+        }
+    }
+
+    /* Media queries pour très petits écrans */
+    @media (max-width: 480px) {
+        .search-container {
+            width: 95vw; /* Utiliser presque toute la largeur disponible */
+        }
+
+        input {
+            font-size: 1rem; /* Réduire encore plus la taille de la police */
+            padding: 0.5rem 0.8rem; /* Réduire le padding */
+        }
+
+        .logo {
+            width: 80px; /* Réduire encore plus la taille du logo */
+        }
     }
 </style>

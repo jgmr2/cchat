@@ -1,3 +1,0 @@
-<div>
-    hola mundo
-</div>

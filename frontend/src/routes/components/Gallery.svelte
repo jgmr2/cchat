@@ -1,5 +1,5 @@
 <script>
-    export let searchResults = []; // Recibir los resultados como propiedad
+    export let searchResults = []; // Recevoir les résultats comme propriété
 </script>
 
 <div class="gallery">
@@ -13,32 +13,28 @@
             {/each}
         </ul>
     {:else}
-        <p class="no-results">No hay resultados para mostrar.</p>
+        <p class="no-results">Aucun résultat à afficher.</p>
     {/if}
-    
-    
 </div>
 
 <style>
     .gallery {
-        position: fixed; /* Fijo en la pantalla */
-        top: 100px; /* Margen superior para evitar que sea tapado por la barra de búsqueda */
-        left: 50%; /* Centrar horizontalmente */
-        transform: translateX(-50%); /* Ajustar el centrado */
+        position: fixed; /* Fixé à l'écran */
+        top: 100px; /* Marge supérieure */
+        left: 50%; /* Centrer horizontalement */
+        transform: translateX(-50%); /* Ajuster le centrage */
         width: 100%; 
-        max-width: 1500px; /* Limitar el ancho máximo */
-        height: calc(95vh - 120px); /* Altura dinámica para ocupar el espacio restante */
-        overflow-y: auto; /* Habilitar scroll si el contenido excede la altura */
-        background-color: #f9f9f9;
-        border-radius: 5px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.678);
-        padding: 20px; /* Espaciado interno */
+        max-width: 1500px; /* Limiter la largeur maximale */
+        height: calc(95vh - 120px); /* Hauteur dynamique */
+        overflow-y: auto; /* Activer le défilement si le contenu dépasse la hauteur */
+        
+        padding: 20px; /* Espacement interne */
         z-index: 1;
     }
 
     .gallery-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Design responsive */
         gap: 15px;
         list-style: none;
         padding: 0;
@@ -83,5 +79,102 @@
         font-size: 1.2rem;
         color: #666;
         margin-top: 20px;
+    }
+
+    /* Media queries pour écrans moyens */
+    @media (max-width: 1480px) {
+        .gallery {
+            top: 100px; /* Réduire la marge supérieure */
+            height: calc(95vh - 110px); /* Ajuster la hauteur */
+            padding: 18px; /* Réduire le padding */
+            width: 95%; /* Réduire la largeur */
+            max-width: 1200px; /* Limiter la largeur maximale */
+        }
+
+        .gallery-list {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Ajuster la taille minimale des colonnes */
+        }
+    }
+
+    /* Media queries pour petits écrans */
+    @media (max-width: 768px) {
+        .gallery {
+            top: 100px; /* Réduire la marge supérieure */
+            height: calc(95vh - 100px); /* Ajuster la hauteur */
+            padding: 15px; /* Réduire le padding */
+            width: 90%; /* Réduire la largeur */
+            max-width: 600px; /* Limiter la largeur maximale */
+        }
+
+        .gallery-list {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Réduire la taille minimale des colonnes */
+            gap: 10px; /* Réduire l'espace entre les éléments */
+        }
+
+        .gallery-item {
+            padding: 8px; /* Réduire le padding */
+        }
+
+        .gallery-image {
+            max-height: 120px; /* Réduire la hauteur maximale des images */
+        }
+
+        .gallery-name {
+            font-size: 0.9rem; /* Réduire la taille du texte */
+        }
+    }
+
+    /* Media queries pour très petits écrans */
+    @media (max-width: 480px) {
+        .gallery {
+            top: 100px; /* Réduire la marge supérieure */
+            height: calc(95vh - 100px); /* Ajuster la hauteur */
+            padding: 10px; /* Réduire le padding */
+            width: 95%; /* Réduire la largeur */
+            max-width: 400px; /* Limiter la largeur maximale */
+        }
+
+        .gallery-list {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Réduire encore plus la taille minimale des colonnes */
+        }
+
+        .gallery-item {
+            padding: 5px; /* Réduire le padding */
+        }
+
+        .gallery-image {
+            max-height: 100px; /* Réduire la hauteur maximale des images */
+        }
+
+        .gallery-name {
+            font-size: 0.8rem; /* Réduire encore plus la taille du texte */
+        }
+    }
+
+    /* Media queries pour écrans très petits */
+    @media (max-width: 360px) {
+        .gallery {
+            top: 100px; /* Réduire la marge supérieure */
+            height: calc(95vh - 100px); /* Ajuster la hauteur */
+            padding: 8px; /* Réduire le padding */
+            width: 100%; /* Utiliser toute la largeur */
+            max-width: 320px; /* Limiter la largeur maximale */
+        }
+
+        .gallery-list {
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Réduire la taille minimale des colonnes */
+        }
+
+        .gallery-item {
+            padding: 4px; /* Réduire le padding */
+        }
+
+        .gallery-image {
+            max-height: 80px; /* Réduire la hauteur maximale des images */
+        }
+
+        .gallery-name {
+            font-size: 0.7rem; /* Réduire la taille du texte */
+        }
     }
 </style>

@@ -1,9 +1,9 @@
 <div class="sidebar">
     <button class="close-btn" on:click={onClose}>X</button>
-    <h2>User Information</h2>
-    <p><strong>Email:</strong> {email}</p>
-    <p><strong>Username:</strong> {username}</p>
-    <button class="logout-btn" on:click={handleLogout}>Logout</button>
+    <h2>Informations Utilisateur</h2>
+    <p><strong>Email :</strong> {email}</p>
+    <p><strong>Nom d'utilisateur :</strong> {username}</p>
+    <button class="logout-btn" on:click={handleLogout}>Déconnexion</button>
 </div>
 
 <script>
@@ -12,10 +12,10 @@
     export let onClose = () => {};
 
     function handleLogout() {
-        // Eliminar el token de sesión del localStorage
+        // Supprimer le token de session du localStorage
         localStorage.removeItem('sessionToken');
 
-        // Recargar la página o redirigir al usuario a la página de inicio de sesión
+        // Recharger la page ou rediriger l'utilisateur vers la page de connexion
         window.location.reload();
     }
 </script>

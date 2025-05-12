@@ -1,17 +1,17 @@
 <form class="register-form" on:submit|preventDefault={handleRegister}>
-    <label for="username">Username:</label>
-    <input type="text" id="username" bind:value={username} name="username" placeholder="Enter your username" />
+    <label for="username">Nom d'utilisateur :</label>
+    <input type="text" id="username" bind:value={username} name="username" placeholder="Entrez votre nom d'utilisateur" />
 
-    <label for="email">Email:</label>
-    <input type="email" id="email" bind:value={email} name="email" placeholder="Enter your email" />
+    <label for="email">Email :</label>
+    <input type="email" id="email" bind:value={email} name="email" placeholder="Entrez votre email" />
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" bind:value={password} name="password" placeholder="Enter your password" />
+    <label for="password">Mot de passe :</label>
+    <input type="password" id="password" bind:value={password} name="password" placeholder="Entrez votre mot de passe" />
 
-    <label for="confirm-password">Confirm Password:</label>
-    <input type="password" id="confirm-password" bind:value={confirmPassword} name="confirm-password" placeholder="Confirm your password" />
+    <label for="confirm-password">Confirmez le mot de passe :</label>
+    <input type="password" id="confirm-password" bind:value={confirmPassword} name="confirm-password" placeholder="Confirmez votre mot de passe" />
 
-    <button type="submit">Register</button>
+    <button type="submit">S'inscrire</button>
 
     {#if errorMessage}
         <p class="error-message">{errorMessage}</p>
@@ -31,15 +31,15 @@
     let successMessage = '';
 
     async function handleRegister() {
-        // Validar que las contraseñas coincidan
+        // Vérifier que les mots de passe correspondent
         if (password !== confirmPassword) {
-            errorMessage = "Passwords do not match.";
+            errorMessage = "Les mots de passe ne correspondent pas.";
             successMessage = '';
             return;
         }
 
         try {
-            // Enviar solicitud POST al endpoint
+            // Envoyer une requête POST au point de terminaison
             const response = await fetch('http://localhost:81/auth/register', {
                 method: 'POST',
                 headers: {
@@ -54,23 +54,23 @@
 
             if (!response.ok) {
                 const errorData = await response.json();
-                errorMessage = errorData.error || "Failed to register.";
+                errorMessage = errorData.error || "Échec de l'inscription.";
                 successMessage = '';
                 return;
             }
 
-            // Mostrar mensaje de éxito
+            // Afficher un message de succès
             const data = await response.json();
-            successMessage = data.message || "Registration successful!";
+            successMessage = data.message || "Inscription réussie !";
             errorMessage = '';
 
-            // Limpiar los campos del formulario
+            // Réinitialiser les champs du formulaire
             username = '';
             email = '';
             password = '';
             confirmPassword = '';
         } catch (error) {
-            errorMessage = "An error occurred. Please try again.";
+            errorMessage = "Une erreur est survenue. Veuillez réessayer.";
             successMessage = '';
             console.error(error);
         }
