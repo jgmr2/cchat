@@ -1,8 +1,15 @@
 <div>
-    <SearchBar />
+ 
+    <SearchBar bind:searchResults={searchResults} bind:isSearching={isSearching} />
+
+    <!-- Mostrar la galería solo si hay resultados -->
+    {#if isSearching}
+        <Gallery {searchResults} />
+    {/if}
+
     {#if sessionToken && userEmail}
-       <Profile on:toggleSidebar={toggleSidebar} />
-       <FloatingButton on:toggleFileUploadPanel={toggleFileUploadPanel} />
+        <Profile on:toggleSidebar={toggleSidebar} />
+        <FloatingButton on:toggleFileUploadPanel={toggleFileUploadPanel} />
     {:else}
         <LoginButton />
     {/if}
@@ -20,17 +27,21 @@
 
 <script>
     import SearchBar from "./components/SearchBar.svelte";
+    import Gallery from "./components/Gallery.svelte";
     import LoginButton from "./components/LoginButton.svelte";
     import Profile from "./components/Profile.svelte";
     import Sidebar from "./components/Sidebar.svelte";
     import FileUpload from "./components/FileUpload.svelte";
     import FloatingButton from "./components/FloatingButton.svelte";
 
+    
+    let searchResults = []; // Variable para almacenar los resultados de búsqueda
+    let isSearching = false; // Variable para controlar el estado de búsqueda
     let sessionToken = null;
     let userEmail = '';
     let username = '';
     let isSidebarOpen = false;
-    let isFileUploadOpen = false; // Nuevo estado para el panel de FileUpload
+    let isFileUploadOpen = false; // Estado para el panel de FileUpload
 
     // Verificar si estamos en el cliente
     if (typeof window !== 'undefined') {

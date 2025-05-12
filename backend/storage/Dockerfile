@@ -1,6 +1,10 @@
 FROM jgmr2/calpine-mongoxxx4.1.0-crow:latest AS builder
 WORKDIR /app
 RUN git clone https://github.com/Thalhammer/jwt-cpp.git /opt/jwt-cpp
+RUN apk add --no-cache \
+        curl
+RUN curl -L https://github.com/nlohmann/json/releases/latest/download/json.hpp -o /app/json.hpp
+
 COPY ./src /app
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 RUN make

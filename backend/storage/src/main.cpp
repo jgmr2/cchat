@@ -1,11 +1,13 @@
 #include "crow.h"
 #include "crow/middlewares/cors.h"
 #include "routes/upload.h"
+#include "routes/uploads.h"
 #include "db.h"
 #include <mongocxx/instance.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <string>
+
 
 int main() {
     mongocxx::instance instance{};
@@ -19,10 +21,13 @@ int main() {
         .headers("Content-Type", "Authorization", "X-Filename", "X-Description", "X-Tags") // Agregar encabezados faltantes
         .max_age(3600);
 
-    try {
+      try {
         MongoDBConnection db_connection("STORAGE");
         const std::string jwt_secret = std::getenv("JWT_SECRET");
+
         setup_upload_routes(app, db_connection, jwt_secret);
+        setup_models_routes(app, db_connection, jwt_secret); // Registrar el nuevo endpoint
+
         app.port(8080).run();
     } catch (const std::exception& e) {
         std::cerr << "Error al iniciar la aplicación: " << e.what() << std::endl;

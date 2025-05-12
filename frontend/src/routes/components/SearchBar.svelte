@@ -3,10 +3,48 @@
     export let value = "";
     export let onSearch = () => {};
 
-    let isSearching = false;
+    export let isSearching = false;
+    let results = []; // Array para almacenar los resultados de la API
+
+    async function fetchResults(query) {
+        if (!query) {
+            results = []; // Si no hay query, vaciar resultados
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('sessionToken'); // Obtener el token desde localStorage
+            if (!token) {
+                console.error("Token JWT no encontrado en localStorage");
+                results = [];
+                return;
+            }
+
+            const response = await fetch(`http://localhost:81/storage/uploads/search?q=${encodeURIComponent(query)}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`, // Usar el token obtenido
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                console.error("Error al llamar a la API:", response.statusText);
+                results = [];
+                return;
+            }
+
+            const data = await response.json();
+            results = data.uploads || []; // Guardar los resultados en el array
+        } catch (error) {
+            console.error("Error al realizar la solicitud:", error);
+            results = [];
+        }
+    }
 
     function handleInput(event) {
         value = event.target.value;
+        fetchResults(value); // Llamar a la API con el valor actual
         onSearch(value);
         if (!isSearching) {
             isSearching = true;
@@ -17,10 +55,9 @@
         if (event.key === "Escape") {
             isSearching = false;
             value = "";
+            results = []; // Limpiar resultados al salir de la búsqueda
         }
     }
-
-    
 </script>
 
 <div
