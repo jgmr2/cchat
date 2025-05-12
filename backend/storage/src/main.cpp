@@ -16,7 +16,7 @@ int main() {
     cors.global()
         .origin("*")
         .methods(crow::HTTPMethod::GET, crow::HTTPMethod::POST, crow::HTTPMethod::OPTIONS)
-        .headers("Content-Type", "Authorization", "X-Filename")
+        .headers("Content-Type", "Authorization", "X-Filename", "X-Description", "X-Tags") // Agregar encabezados faltantes
         .max_age(3600);
 
     try {

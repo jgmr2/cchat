@@ -8,6 +8,8 @@
 #include <iostream> // Para logs
 #include "../db.h"
 #include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/builder/basic/document.hpp>
+#include <bsoncxx/builder/basic/array.hpp>
 #include <bsoncxx/types.hpp>
 #include <jwt-cpp/jwt.h> // Biblioteca para manejar JWT
 
@@ -64,7 +66,7 @@ inline void setup_upload_routes(crow::App<crow::CORSHandler>& app, MongoDBConnec
                 auto decoded = jwt::decode(token);
                 auto verifier = jwt::verify()
                                     .allow_algorithm(jwt::algorithm::hs256{jwt_secret})
-                                    .with_issuer("auth_service"); // Cambia "auth_service" por tu emisor si es necesario
+                                    .with_issuer("auth_service");
                 verifier.verify(decoded);
 
                 // Extraer el ID del usuario del token JWT
@@ -72,7 +74,7 @@ inline void setup_upload_routes(crow::App<crow::CORSHandler>& app, MongoDBConnec
                     user_id = decoded.get_payload_claim("user_id").as_string();
                     std::cout << "[INFO] Token JWT válido. ID de usuario: " << user_id << std::endl;
                 } else {
-                    std::cerr << "[ERROR] El token JWT no contiene el ID del usuario (claim 'sub')." << std::endl;
+                    std::cerr << "[ERROR] El token JWT no contiene el ID del usuario (claim 'user_id')." << std::endl;
                     return crow::response(401, "Invalid token: missing user ID.");
                 }
             } catch (const std::exception& e) {
@@ -87,13 +89,28 @@ inline void setup_upload_routes(crow::App<crow::CORSHandler>& app, MongoDBConnec
                 return crow::response(400, "No file provided in the request body.");
             }
 
+            // Obtener los encabezados adicionales
             std::string original_filename = req.get_header_value("X-Filename");
             if (original_filename.empty()) {
                 std::cerr << "[ERROR] Falta el encabezado X-Filename." << std::endl;
                 return crow::response(400, "Missing X-Filename header.");
             }
 
+            std::string description = req.get_header_value("X-Description");
+            if (description.empty()) {
+                std::cerr << "[ERROR] Falta el encabezado X-Description." << std::endl;
+                return crow::response(400, "Missing X-Description header.");
+            }
+
+            std::string tags_json = req.get_header_value("X-Tags");
+            if (tags_json.empty()) {
+                std::cerr << "[ERROR] Falta el encabezado X-Tags." << std::endl;
+                return crow::response(400, "Missing X-Tags header.");
+            }
+
             std::cout << "[INFO] Nombre del archivo recibido: " << original_filename << std::endl;
+            std::cout << "[INFO] Descripción recibida: " << description << std::endl;
+            std::cout << "[INFO] Etiquetas recibidas: " << tags_json << std::endl;
 
             std::string file_extension = get_file_extension(original_filename);
             std::string sha512_hash = calculate_sha512(req.body);
@@ -119,12 +136,41 @@ inline void setup_upload_routes(crow::App<crow::CORSHandler>& app, MongoDBConnec
             try {
                 // Guardar los metadatos del archivo en la base de datos
                 auto collection = database["uploads"];
-                bsoncxx::builder::stream::document document{};
-                document << "user_id" << user_id
-                         << "filename" << original_filename
-                         << "hash" << sha512_hash
-                         << "path" << file_path
-                         << "timestamp" << bsoncxx::types::b_date(std::chrono::system_clock::now());
+                bsoncxx::builder::basic::document document{};
+                bsoncxx::builder::basic::array tags_array;
+
+                // Construir manualmente el array BSON para las etiquetas
+                size_t start = 0, end = 0;
+                while ((end = tags_json.find(',', start)) != std::string::npos) {
+                    std::string tag = tags_json.substr(start, end - start);
+                    tag.erase(std::remove(tag.begin(), tag.end(), '\"'), tag.end());
+                    tag.erase(std::remove(tag.begin(), tag.end(), '['), tag.end());
+                    tag.erase(std::remove(tag.begin(), tag.end(), ']'), tag.end());
+                    tag.erase(std::remove(tag.begin(), tag.end(), ' '), tag.end());
+                    if (!tag.empty()) {
+                        tags_array.append(tag);
+                    }
+                    start = end + 1;
+                }
+                std::string last_tag = tags_json.substr(start);
+                last_tag.erase(std::remove(last_tag.begin(), last_tag.end(), '\"'), last_tag.end());
+                last_tag.erase(std::remove(last_tag.begin(), last_tag.end(), '['), last_tag.end());
+                last_tag.erase(std::remove(last_tag.begin(), last_tag.end(), ']'), last_tag.end());
+                last_tag.erase(std::remove(last_tag.begin(), last_tag.end(), ' '), last_tag.end());
+                if (!last_tag.empty()) {
+                    tags_array.append(last_tag);
+                }
+
+                document.append(
+                    bsoncxx::builder::basic::kvp("user_id", user_id),
+                    bsoncxx::builder::basic::kvp("filename", original_filename),
+                    bsoncxx::builder::basic::kvp("description", description),
+                    bsoncxx::builder::basic::kvp("tags", tags_array),
+                    bsoncxx::builder::basic::kvp("hash", sha512_hash),
+                    bsoncxx::builder::basic::kvp("path", file_path),
+                    bsoncxx::builder::basic::kvp("timestamp", bsoncxx::types::b_date(std::chrono::system_clock::now()))
+                );
+
                 collection.insert_one(document.view());
                 std::cout << "[INFO] Metadatos del archivo guardados en la base de datos." << std::endl;
             } catch (const std::exception& e) {
